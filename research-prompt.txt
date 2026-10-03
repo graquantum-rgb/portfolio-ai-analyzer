@@ -1,0 +1,13 @@
+Portfolio research methodology is embedded in server.js.
+
+Core principles:
+- Primary-source-first.
+- Never invent data.
+- Label reported data, management guidance, external estimates, calculations and assumptions.
+- Use current web research.
+- Analyse 5/10-year history and user-selected forward horizon.
+- Review requested con-calls.
+- Study moat, market share, customers, capacity, CAPEX, governance, legal matters, promoters and corporate actions.
+- Use P/E, PEG, EV/EBITDA, DCF, Reverse DCF, SOTP, P/B/residual income and dividend methods where appropriate.
+- Reverse DCF must identify what future performance is priced into today's market capitalisation.
+- ROE/ROCE >20% is not a mandatory rule.

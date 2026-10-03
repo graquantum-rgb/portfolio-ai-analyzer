@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Portfolio Analyzer</title>
+<style>
+:root{font-family:Inter,system-ui,Arial;color:#172033;background:#f5f7fb}
+body{margin:0}.wrap{max-width:980px;margin:30px auto;padding:16px}
+.card{background:white;border:1px solid #dce1e8;border-radius:16px;padding:20px;margin-bottom:16px}
+h1{margin:0 0 6px;font-size:28px}.muted{color:#667085;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+label{font-size:13px;font-weight:700;display:block;margin-bottom:6px}
+select,input[type=file]{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cfd5df;border-radius:9px;background:white}
+.checks{display:flex;flex-wrap:wrap;gap:7px}.check{border:1px solid #dce1e8;border-radius:8px;padding:8px 10px;font-size:13px}
+button{padding:11px 16px;border:0;border-radius:9px;font-weight:750;cursor:pointer}
+.primary{background:#2563eb;color:white}.secondary{background:white;border:1px solid #cfd5df}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.status{margin-top:10px;color:#667085;font-size:13px}.result{white-space:pre-wrap;line-height:1.55;font-size:14px}
+.filelist{font-size:13px;margin-top:8px;color:#667085}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.wrap{margin:10px auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<h1>AI Portfolio Analyzer</h1>
+<div class="muted">Upload your broker screenshots → choose research depth → AI extracts the portfolio and performs fundamental, management, valuation and portfolio analysis.</div>
+</div>
+
+<form id="form">
+<div class="card">
+<h3>1. Upload Portfolio Screenshots</h3>
+<input id="screenshots" name="screenshots" type="file" accept="image/*" multiple required>
+<div id="filelist" class="filelist">No screenshots selected.</div>
+</div>
+
+<div class="card">
+<h3>2. Research Settings</h3>
+<div class="grid">
+<div><label>Historical analysis</label><select id="history"><option>5 Years</option><option>10 Years</option><option>3 Years</option><option>Maximum Available</option></select></div>
+<div><label>Forward forecast</label><select id="forecast"><option>5 Years</option><option>10 Years</option><option>3 Years</option></select></div>
+<div><label>Con-call depth</label><select id="calls"><option>Latest 4 quarters + relevant history</option><option>Latest 2 quarters</option><option>Latest 8 quarters</option><option>All available</option></select></div>
+<div><label>Strategic vision</label><select id="vision"><option>10Y + 25Y where documented</option><option>10Y only</option><option>25Y + Viksit Bharat 2047 where relevant</option><option>Maximum Available</option></select></div>
+<div><label>Risk framework</label><select id="risk"><option>Balanced</option><option>Conservative</option><option>Growth-oriented</option></select></div>
+<div><label>Output</label><select id="output"><option>Detailed Analysis</option><option>Executive Summary</option></select></div>
+</div>
+</div>
+
+<div class="card">
+<h3>3. Valuation Methods</h3>
+<div class="checks">
+<label class="check"><input type="checkbox" value="P/E" checked>P/E</label>
+<label class="check"><input type="checkbox" value="PEG" checked>PEG</label>
+<label class="check"><input type="checkbox" value="EV/EBITDA" checked>EV/EBITDA</label>
+<label class="check"><input type="checkbox" value="DCF" checked>DCF</label>
+<label class="check"><input type="checkbox" value="Reverse DCF" checked>Reverse DCF</label>
+<label class="check"><input type="checkbox" value="SOTP" checked>SOTP</label>
+<label class="check"><input type="checkbox" value="P/B / Residual Income" checked>P/B / Residual Income</label>
+<label class="check"><input type="checkbox" value="Dividend / DDM" checked>Dividend / DDM</label>
+</div>
+<div class="actions">
+<button class="primary" type="submit">Analyse Portfolio</button>
+<button class="secondary" type="button" id="clear">Clear</button>
+</div>
+<div id="status" class="status">Ready.</div>
+</div>
+</form>
+
+<div class="card" id="reportCard" hidden>
+<h3>AI Portfolio Research Report</h3>
+<div id="report" class="result"></div>
+</div>
+</div>
+
+<script>
+const form=document.getElementById("form"), files=document.getElementById("screenshots");
+const list=document.getElementById("filelist"), status=document.getElementById("status");
+files.addEventListener("change",()=>{list.textContent=files.files.length?`${files.files.length} screenshot(s) selected.`:"No screenshots selected.";});
+form.addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!files.files.length){status.textContent="Please upload at least one screenshot.";return;}
+ const fd=new FormData();
+ for(const f of files.files) fd.append("screenshots",f);
+ const cfg={
+ history:document.getElementById("history").value,
+ forecast:document.getElementById("forecast").value,
+ calls:document.getElementById("calls").value,
+ vision:document.getElementById("vision").value,
+ risk:document.getElementById("risk").value,
+ output:document.getElementById("output").value,
+ valuations:[...document.querySelectorAll(".check input:checked")].map(x=>x.value)
+ };
+ fd.append("config",JSON.stringify(cfg));
+ status.textContent="Uploading screenshots and starting AI research. This may take some time.";
+ document.getElementById("reportCard").hidden=false;
+ document.getElementById("report").textContent="Research in progress...";
+ try{
+   const r=await fetch("/api/analyze",{method:"POST",body:fd});
+   const data=await r.json();
+   if(!r.ok) throw new Error(data.error||"Analysis failed");
+   document.getElementById("report").textContent=data.report;
+   status.textContent="Analysis completed.";
+ }catch(err){
+   document.getElementById("report").textContent="ERROR: "+err.message;
+   status.textContent="Analysis failed.";
+ }
+});
+document.getElementById("clear").addEventListener("click",()=>{form.reset();list.textContent="No screenshots selected.";status.textContent="Ready.";document.getElementById("reportCard").hidden=true;});
+</script>
+</body>
+</html>
