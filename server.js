@@ -109,9 +109,10 @@ First extract the portfolio table from the screenshots. Flag uncertain OCR. Then
   }
 });
 
-app.get("*",(req,res)=>{
-  res.sendFile(path.join(__dirname,"public","index.html"));
+app.get("/{*splat}", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-const port=Number(process.env.PORT||3000);
-app.listen(port,()=>console.log(`Portfolio AI Analyzer running on http://localhost:${port}`));
+const port=Number(process.env.PORT||3000);app.listen(port, "0.0.0.0", () => {
+  console.log(`Portfolio AI Analyzer running on port ${port}`);
+});
